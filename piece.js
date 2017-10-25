@@ -1,7 +1,9 @@
 // define a Piece as a 2-d array of blocks
 function Piece(board) {
 
-    this.shape = 1;//round(random(0,6));
+    // set to 1 for testing
+    // what is the piece shape
+    this.shape = round(random(0,6));
 
     this.makeMatrix = function() {
         switch (this.shape) {
