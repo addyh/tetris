@@ -39,21 +39,6 @@ function Board() {
     this.matrix = empty;
 
     this.deleteRow = function(row) {
-
-        for (let i = 0; i < 100000; i++) {
-            let save;
-            for (let j = 0; j < this.matrix[row].length; j++) {
-                save = this.matrix[row][j].color;
-                this.matrix[row][j].color = {r: 255, g: 255, b: 255};
-                this.draw();
-            }
-            for (let k = 0; k < 100000; k++) {}
-            for (let j = 0; j < this.matrix[row].length; j++) {
-                this.matrix[row][j].color = save;
-                this.draw();
-            }
-        }
-
         // go through each row, starting at the full one, up to the top
         while (row > 0) {
             for (let i = 0; i < this.matrix[row].length; i++) {
