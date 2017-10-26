@@ -45,6 +45,8 @@ function Board() {
                 // change each row's attributes to be the one above it
                 this.matrix[row][i].value = this.matrix[row-1][i].value;
                 this.matrix[row][i].color = this.matrix[row-1][i].color;
+                //console.log(this.matrix[row][i]);
+                //console.log(this.matrix[row-1][i]);
             }
             row--;
         }
@@ -54,17 +56,17 @@ function Board() {
     this.checkIfRowsFull = function() {
 
         // go through each row
-        for (var j=0; j<this.matrix.length; j++) {
+        for (var j=1; j<this.matrix.length; j++) {
 
             // go through each column
             for (var i=0; i<this.matrix[j].length; i++) {
 
                 if (this.matrix[j][i].value == 0) {
-                      break;
+                    break;
                 }
                 // we are at the last column, all values are 1
-                  else if (i == this.matrix[j].length-1) {
-                      // delete row j
+                else if (i == this.matrix[j].length-1) {
+                    // delete row j
                     this.deleteRow(j);
                     this.checkIfRowsFull();
                     return;
