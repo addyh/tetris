@@ -1,44 +1,51 @@
-function Board() {
+class Board {
 
-    // these variables are for the timing of the piece dropping
-    this.lastTime = 0;
-    this.dropCounter = 0;
-    this.dropInterval = 1000;
+    constructor() {
+        // these variables are for the timing of the piece dropping
+        this.lastTime = 0;
+        this.dropCounter = 0;
+        this.dropInterval = 1000;
 
-    // how long they've been holding an arrow key down for
-    this.downFor = 0;
+        // how long they've been holding an arrow key down for
+        this.downFor = 0;
 
-    // define the bottom and right of the board per how many gridSizes
-    // value is in pixels
-    this.lowerLimit = gridHeight*gridSize;
-    this.rightLimit = gridWidth*gridSize;
+        // define the bottom and right of the board per how many gridSizes
+        // value is in pixels
+        this.lowerLimit = gridHeight*gridSize;
+        this.rightLimit = gridWidth*gridSize;
 
-    this.gameStarted = false;
-    this.difficulty = "Easy";
-    this.diffColor = "green";
-    this.gridOn = true;
+        this.gameStarted = false;
+        this.difficulty = "Easy";
+        this.diffColor = "green";
+        this.gridOn = true;
 
-    // create a board grid, size (gridHeight) x (gridWidth)
-    // boxes in the board are referenced:
-    // matrix[row][col]
-    // with [0][0] at the top-left
-    var empty = new Array(gridHeight);
+        // your score counter
+        this.score = 0;
+        // personal best
+        this.best = getCookie('personal_best');
 
-    for (var j=0; j<empty.length; j++) {
-        empty[j] = new Array(gridWidth);
+        // create a board grid, size (gridHeight) x (gridWidth)
+        // boxes in the board are referenced:
+        // matrix[row][col]
+        // with [0][0] at the top-left
+        var empty = new Array(gridHeight);
 
-        for (var i=0; i<gridWidth; i++) {
-            empty[j][i] = {
-                pos:   {x: i, y: j},
-                color: {r: 255, g: 255, b: 255},
-                value: 0
-            };
+        for (var j=0; j<empty.length; j++) {
+            empty[j] = new Array(gridWidth);
+
+            for (var i=0; i<gridWidth; i++) {
+                empty[j][i] = {
+                    pos:   {x: i, y: j},
+                    color: {r: 255, g: 255, b: 255},
+                    value: 0
+                };
+            }
         }
-    }
 
-    this.matrix = empty;
+        this.matrix = empty;
+    } // end of constructor()
 
-    this.deleteRow = function(row) {
+    deleteRow(row) {
         // go through each row, starting at the full one, up to the top
         while (row > 0) {
             for (let i = 0; i < this.matrix[row].length; i++) {
@@ -53,7 +60,7 @@ function Board() {
     }
 
     // checks if any rows are full
-    this.checkIfRowsFull = function() {
+    checkIfRowsFull() {
 
         // go through each row
         for (var j=1; j<this.matrix.length; j++) {
@@ -79,7 +86,7 @@ function Board() {
     }
 
     // add a new piece to the board
-    this.addPiece = function(piece) {
+    addPiece(piece) {
 
         // go through every element in the piece (4x4)
         for (var j=0; j<piece.matrix.length; j++) {
@@ -94,12 +101,12 @@ function Board() {
                 }
             }
         }
-    };
+    }
 
     // draw the entire board
-    this.draw = function() {
+    draw() {
         // go through every element of the entire board matrix (gridHeight) x (gridWidth)
-        for (var j=0; j<empty.length; j++) {
+        for (var j=0; j<this.matrix.length; j++) {
             for (var i=0; i<gridWidth; i++) {
                 // if the value is 1, draw the box (gridSize) x (gridSize)
                 var box = this.matrix[j][i];
@@ -118,6 +125,6 @@ function Board() {
                 }
             }
         }
-    };
+    } // end of draw()
 
-}
+} // end of Board class

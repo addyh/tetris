@@ -12,19 +12,22 @@ function setup() {
     board = new Board();
     piece = new Piece(board);
 
-    createCanvas(board.rightLimit+gridSize*2, board.lowerLimit+gridSize*2);
+    createCanvas(board.rightLimit+gridSize*2, board.lowerLimit+gridSize*2)
+        .id('mainCanvas');
     background(255);
 
 }
 
-
+// main draw loop
 function draw() {
 
+    // clear screen every frame
     background(255);
-    noStroke();
-    fill(100);
 
-    // draw game limits
+    // draw game borders
+    // border color, dark gray
+    fill(100);
+    noStroke();
     // top
     rect(0, 0, board.rightLimit+gridSize, gridSize);
     // left
@@ -34,27 +37,45 @@ function draw() {
     // bottom
     rect(0, board.lowerLimit+gridSize, board.rightLimit+2*gridSize, gridSize);
 
+    // post current high score
+    fill(255);
+    text("Score: "+board.score, 100, 32);
+    text("Personal Best: "+board.best, 380, 32);
+
+    // grid color, light gray
     stroke(200);
-    // we need to translate because the grid is off by 1
+
+    // we need to translate because the grid is off by 1 gridSize
     // because of the game border
     translate(gridSize, gridSize);
 
     if (board.gameStarted) {
-        startGame();
-    } else {
-        board.gridOn?board.draw():null;
+        gameLoop();
+    }
+    else {
+        board.gridOn ? board.draw() : null;
         startScreen();
     }
 
-
-}
+} // end of draw() loop
 
 function startScreen() {
 
-    var hoverStart = hovering('start');
-    var hoverGrid = hovering('grid');
-    var hoverDiff = hovering('diff');
+    // booleans, are we hovering?
+    let hoverStart = hovering('start');
+    let hoverGrid = hovering('grid');
+    let hoverDiff = hovering('diff');
+    let hoverCredits = hovering('credits');
 
+    // mouse pointer type
+    if (hoverStart || hoverGrid|| hoverDiff|| hoverCredits) {
+        $('#mainCanvas').css('cursor', 'pointer');
+    }
+    else {
+        $('#mainCanvas').css('cursor', 'default');
+    }
+
+    // button layout
     translate(0,-50);
     strokeWeight(9);
     fill(40);
@@ -79,18 +100,23 @@ function startScreen() {
     noStroke();
     text("Difficulty: "+board.difficulty,200-30,200);
     translate(0, 150);
-    textSize(20);
-    fill(150);
-    noStroke();
-    text("games by ady",200+40,195);
+    textSize(25);
+    fill(hoverCredits?color(0,0,238):150);
+    stroke(hoverCredits?color(0,0,238):150);
+    strokeWeight(1);
+    text("addyh.github.io",210,185);
+    if (hoverCredits) {
+        strokeWeight(3);
+        line(210, 190, 380, 190);
+    }
     translate(0,-450+50);
     strokeWeight(1);
     fill(0);
     stroke(0);
-}
+} // end of startScreen()
 
 // main gameplay loop
-function startGame() {
+function gameLoop() {
 
     board.draw();
     piece.draw();
@@ -120,7 +146,7 @@ function startGame() {
             piece.goDown();
         }
     }
-}
+} // end of gameLoop()
 
 // move by 1 gridSize with a simple arrow press
 function keyPressed() {
@@ -155,13 +181,20 @@ Number.prototype.between = function(a, b) {
 
 function hovering(over) {
     if (over == "start") {
-        return (mouseX.between(179+25, 430+25) && mouseY.between(97+25, 178+25));
-
-    } else if (over == "grid") {
-        return (mouseX.between(179+25, 431+25) && mouseY.between(250+25, 328+25));
-
-    } else if (over == "diff") {
-        return (mouseX.between(139+25, 470+25) && mouseY.between(389+25, 474+25));
+        return (mouseX.between(179+gridSize, 430+gridSize)
+            && mouseY.between(97+gridSize, 178+gridSize));
+    }
+    else if (over == "grid") {
+        return (mouseX.between(179+gridSize, 431+gridSize)
+            && mouseY.between(250+gridSize, 328+gridSize));
+    }
+    else if (over == "diff") {
+        return (mouseX.between(139+gridSize, 470+gridSize)
+            && mouseY.between(389+gridSize, 474+gridSize));
+    }
+    else if (over == "credits") {
+        return (mouseX.between(139+50+gridSize, 470+gridSize-50)
+            && mouseY.between(389+gridSize+160, 474+gridSize+125));
     }
 }
 
@@ -197,26 +230,33 @@ function mouseClicked() {
         if (hovering('start')) {
             board.gameStarted = true;
 
+        }
         // grid on/off button
-        } else if (hovering('grid')) {
+        else if (hovering('grid')) {
             board.gridOn = !board.gridOn;
 
+        }
         // difficuly level button
-        } else if (hovering('diff')) {
+        else if (hovering('diff')) {
 
             if (board.difficulty == "Easy") {
                 board.difficulty = "Med.";
                 board.diffColor = "orange";
                 board.dropInterval = 300;
-            } else if (board.difficulty == "Med.") {
+            }
+            else if (board.difficulty == "Med.") {
                 board.difficulty = "Hard";
                 board.diffColor = "red";
                 board.dropInterval = 100;
-            } else if (board.difficulty == "Hard") {
+            }
+            else if (board.difficulty == "Hard") {
                 board.difficulty = "Easy";
                 board.diffColor = "green";
                 board.dropInterval = 1000;
             }
+        }
+        else if (hovering('credits')) {
+            window.location.href = 'https://addyh.github.io';
         }
     }
 }
@@ -235,4 +275,27 @@ function touchEnded() {
   mouseClicked();
   mouseReleased();
   return false;
+}
+
+function setCookie(cname, cvalue, exdays) {
+    var d = new Date();
+    d.setTime(d.getTime() + (exdays*24*60*60*1000));
+    var expires = "expires="+ d.toUTCString();
+    document.cookie = cname + "=" + cvalue + ";" + expires;
+}
+
+function getCookie(cname) {
+    var name = cname + "=";
+    var decodedCookie = decodeURIComponent(document.cookie);
+    var ca = decodedCookie.split(';');
+    for(var i = 0; i <ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+        }
+    }
+    return 0;
 }
