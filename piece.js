@@ -91,7 +91,18 @@ class Piece {
         if (this.farBottom() < this.board.lowerLimit && this.canGoDown() == true) {
             this.pos.y++;
             this.board.dropCounter = 0;
-            this.board.score++;
+
+            // score increases here
+            if (this.board.difficulty == 'Easy') {
+                this.board.score++;
+            }
+            else if (this.board.difficulty == 'Med.') {
+                this.board.score += 2;
+            }
+            else if (this.board.difficulty == 'Hard') {
+                this.board.score += 5;
+            }
+            // save personal best cookie
             if (this.board.score > this.board.best) {
                 this.board.best = this.board.score;
                 setCookie('personal_best', this.board.best, 365*100);
