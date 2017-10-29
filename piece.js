@@ -1,75 +1,24 @@
 // define a Piece as a 2-d array of blocks
-function Piece(board) {
+class Piece {
 
-    // set to 1 for testing
-    // what is the piece shape
-    this.shape = round(random(0,6));
+    constructor(board) {
+        // set to 1 for testing
+        // what is the piece shape
+        this.shape = round(random(0,6));
 
-    this.makeMatrix = function() {
-        switch (this.shape) {
-            case 0:
-                return [
-                    [0, 0 ,0, 0],
-                    [0, 1 ,1, 0],
-                    [0, 1, 1, 0],
-                    [0, 0, 0, 0]
-                  ];
-            case 1:
-                return [
-                    [0, 1 ,0, 0],
-                    [0, 1 ,0, 0],
-                    [0, 1, 0, 0],
-                    [0, 1, 0, 0]
-                  ];
-            case 2:
-                return [
-                    [0, 0 ,0, 0],
-                    [0, 1, 1, 0],
-                    [1, 1, 0, 0],
-                    [0, 0, 0, 0]
-                  ];
-            case 3:
-                return [
-                    [0, 0 ,0, 0],
-                    [1, 1 ,0, 0],
-                    [0, 1, 1, 0],
-                    [0, 0, 0, 0]
-                  ];
-            case 4:
-                return [
-                    [0, 1 ,0, 0],
-                    [0, 1 ,0, 0],
-                    [0, 1, 1, 0],
-                    [0, 0, 0, 0]
-                  ];
-            case 5:
-                return [
-                    [0, 1, 0, 0],
-                    [0, 1, 0, 0],
-                    [1, 1, 0, 0],
-                    [0, 0, 0, 0]
-                  ];
-            case 6:
-                return [
-                    [0, 0 ,0, 0],
-                    [1, 1 ,1, 0],
-                    [0, 1, 0, 0],
-                    [0, 0, 0, 0]
-                  ];
-        }
+        // position of the piece's top-left corner, not yet scaled by gridSize
+        // so every 1 position, translates to X gridSize in (this.draw())
+                                       // (POS) * (GRIDSIZE) = PIXEL
+        this.pos = {x: 4, y: 0};       // ****** UNITARY ******
+        this.color = {r: random(0,200), g: random(0,200), b: random(0,200)};
+        this.matrix = makeMatrix(this.shape);
+        this.atBottom = false;
+        this.board = board;
     }
-    // the position of the piece's top-left corner, not yet scaled by gridSize
-    // so every 1 position, translates to X gridSize in (this.draw())
-                                     // (POS) * (GRIDSIZE) = PIXEL
-    this.pos = {x: 4, y: 0};       // ****** UNITARY ******
-    this.color = {r: random(0,200), g: random(0,200), b: random(0,200)};
-    this.matrix = this.makeMatrix();
-    this.atBottom = false;
-    this.board = board;
 
     // draw the piece on the board using its (pos) (color) and (matrix)
     // scaled by (gridSize)
-    this.draw = function() {
+    draw() {
         for (var y=0; y<this.matrix.length; y++) {
             var row = this.matrix[y];
 
@@ -102,10 +51,10 @@ function Piece(board) {
                 }
             }
         }
-    };
+    } // end of draw()
 
     // drop the piece by 1 gridSize at an interval
-    this.lower = function() {
+    lower() {
         var time = round(millis());
         var deltaTime = time - this.board.lastTime;
         this.board.lastTime = time;
@@ -135,20 +84,25 @@ function Piece(board) {
         }
 
         return this;
-    };
+    } // end of lower()
 
     // drop the piece down by 1 block
-    this.goDown = function() {
+    goDown() {
         if (this.farBottom() < this.board.lowerLimit && this.canGoDown() == true) {
             this.pos.y++;
             this.board.dropCounter = 0;
+            this.board.score++;
+            if (this.board.score > this.board.best) {
+                this.board.best = this.board.score;
+                setCookie('personal_best', this.board.best, 365*100);
+            }
         }
-    };
+    }
 
     // this only moves the piece LEFT or RIGHT
     // pass in -1 or 1, and it is scaled by gridSize
     // automatically within the draw function
-    this.move = function(where) {
+    move(where) {
         // RIGHT and LEFT limits of the board, respectively
         if (((where > 0 && this.farRight(this.matrix) < this.board.rightLimit)
             || (where < 0 && this.farLeft(this.matrix) > 0))
@@ -156,9 +110,9 @@ function Piece(board) {
 
                 this.pos.x += where;
             }
-    };
+    }
 
-    this.rotate = function() {
+    rotate() {
       var copy = new Array(this.matrix.length);
         for (var i=0; i<this.matrix.length; i++) {
             copy[i] = new Array(this.matrix[i].length);
@@ -167,19 +121,19 @@ function Piece(board) {
             }
         }
 
-        copy = cp(copy);
+        var rotated = rotatedPiece(copy);
 
-        var canRotate = (this.canRotate(copy));
+        var canRotate = (this.canRotate(rotated));
 
         if (canRotate) {
-            return copy;
+            return rotated;
         } else {
           return this.matrix;
         }
-    };
+    }
 
     // can the piece be rotated?
-    this.canRotate = function(rotatedMatrix) {
+    canRotate(rotatedMatrix) {
         // go through every element in the piece (4x4)
         for (var j=0; j<rotatedMatrix.length; j++) {
 
@@ -194,10 +148,10 @@ function Piece(board) {
             }
         }
         return true;
-    };
+    }
 
     // can the piece go down by 1 block?
-    this.canGoDown = function() {
+    canGoDown() {
         // go through every element in the piece (4x4)
         for (var j=0; j<this.matrix.length; j++) {
             for (var i=0; i<this.matrix[j].length; i++) {
@@ -211,10 +165,10 @@ function Piece(board) {
             }
         }
         return true;
-    };
+    }
 
     // can the piece move left/right?
-    this.canMove = function(where) {
+    canMove (where) {
         // go through every element in the piece (4x4)
         for (var j=0; j<this.matrix.length; j++) {
             for (var i=0; i<this.matrix[j].length; i++) {
@@ -227,10 +181,10 @@ function Piece(board) {
             }
         }
         return true;
-    };
+    }
 
     // in pixels
-    this.farRight = function(matrix) {
+    farRight(matrix) {
         var farRight = 0;
         matrix.forEach(function(row, y) {
             row.forEach(function(value, x) {
@@ -240,10 +194,10 @@ function Piece(board) {
             });
         });
         return (this.pos.x*gridSize + (farRight+1)*gridSize);
-    };
+    }
 
     // in pixels
-    this.farLeft = function(matrix) {
+    farLeft(matrix) {
         var farLeft = 100;
         matrix.forEach(function(row, y) {
             row.forEach(function(value, x) {
@@ -253,10 +207,10 @@ function Piece(board) {
             });
         });
         return (this.pos.x*gridSize + farLeft*gridSize);
-    };
+    }
 
     // in pixels
-    this.farBottom = function() {
+    farBottom() {
         var farBottom = 0;
         this.matrix.forEach(function(row, y) {
             row.forEach(function(value, x) {
@@ -266,254 +220,6 @@ function Piece(board) {
             });
         });
         return (this.pos.y*gridSize + (farBottom+1)*gridSize);
-    };
-
-}
-
-function arraysEqual(a,b) {
-    /*
-        Array-aware equality checker:
-        Returns whether arguments a and b are == to each other;
-        however if they are equal-lengthed arrays, returns whether their
-        elements are pairwise == to each other recursively under this
-        definition.
-    */
-    if (a instanceof Array && b instanceof Array) {
-        if (a.length!=b.length)  // assert same length
-            return false;
-        for(var i=0; i<a.length; i++)  // assert each element equal
-            if (!arraysEqual(a[i],b[i]))
-                return false;
-        return true;
-    } else {
-        return a==b;  // if not both arrays, should be the same
     }
-}
 
-function cp (copy) {
-
-// I /////////////////////////////////
-    if (arraysEqual(copy,[
-        [0, 1 ,0, 0],
-        [0, 1 ,0, 0],
-        [0, 1, 0, 0],
-        [0, 1, 0, 0]
-    ]))
-        return [
-            [0, 0 ,0, 0],
-            [1, 1 ,1, 1],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0]
-        ];
-    if (arraysEqual(copy,[
-        [0, 0, 0, 0],
-        [1, 1, 1, 1],
-        [0, 0, 0, 0],
-        [0, 0, 0, 0]
-    ]))
-        return [
-            [0, 1 ,0, 0],
-            [0, 1 ,0, 0],
-            [0, 1, 0, 0],
-            [0, 1, 0, 0]
-        ];
-// S //////////////////////////////////
-    if (arraysEqual(copy,[
-        [0, 0 ,0, 0],
-        [0, 1, 1, 0],
-        [1, 1, 0, 0],
-        [0, 0, 0, 0]
-    ]))
-        return [
-            [1, 0 ,0, 0],
-            [1, 1, 0, 0],
-            [0, 1, 0, 0],
-            [0, 0, 0, 0]
-        ];
-    if (arraysEqual(copy,[
-        [1, 0 ,0, 0],
-        [1, 1, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 0, 0]
-    ]))
-        return [
-            [0, 0 ,0, 0],
-            [0, 1, 1, 0],
-            [1, 1, 0, 0],
-            [0, 0, 0, 0]
-        ];
-// Z ////////////////////////////////////
-    if (arraysEqual(copy,[
-        [0, 0 ,0, 0],
-        [1, 1 ,0, 0],
-        [0, 1, 1, 0],
-        [0, 0, 0, 0]
-    ]))
-        return [
-            [0, 1 ,0, 0],
-            [1, 1, 0, 0],
-            [1, 0, 0, 0],
-            [0, 0, 0, 0]
-        ];
-    if (arraysEqual(copy,[
-        [0, 1 ,0, 0],
-        [1, 1, 0, 0],
-        [1, 0, 0, 0],
-        [0, 0, 0, 0]
-    ]))
-        return [
-            [0, 0 ,0, 0],
-            [1, 1 ,0, 0],
-            [0, 1, 1, 0],
-            [0, 0, 0, 0]
-        ];
-// L ///////////////////////////////////
-    if (arraysEqual(copy,[
-        [0, 1 ,0, 0],
-        [0, 1 ,0, 0],
-        [0, 1, 1, 0],
-        [0, 0, 0, 0]
-    ]))
-        return [
-            [0, 0 ,0, 0],
-            [1, 1, 1, 0],
-            [1, 0, 0, 0],
-            [0, 0, 0, 0]
-        ];
-    if (arraysEqual(copy,[
-        [0, 0 ,0, 0],
-        [1, 1, 1, 0],
-        [1, 0, 0, 0],
-        [0, 0, 0, 0]
-    ]))
-        return [
-            [1, 1, 0, 0],
-            [0, 1, 0, 0],
-            [0, 1, 0, 0],
-            [0, 0, 0, 0]
-        ];
-    if (arraysEqual(copy,[
-        [1, 1, 0, 0],
-        [0, 1, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 0, 0]
-    ]))
-        return [
-            [0, 0, 1, 0],
-            [1, 1, 1, 0],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0]
-        ];
-    if (arraysEqual(copy,[
-        [0, 0, 1, 0],
-        [1, 1, 1, 0],
-        [0, 0, 0, 0],
-        [0, 0, 0, 0]
-    ]))
-        return [
-            [0, 1 ,0, 0],
-            [0, 1 ,0, 0],
-            [0, 1, 1, 0],
-            [0, 0, 0, 0]
-        ];
-/////// J ////////////////////////////////
-    if (arraysEqual(copy,[
-        [0, 1 ,0, 0],
-        [0, 1 ,0, 0],
-        [1, 1, 0, 0],
-        [0, 0, 0, 0]
-    ]))
-        return [
-            [1, 0 ,0, 0],
-            [1, 1, 1, 0],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0]
-        ];
-    if (arraysEqual(copy,[
-        [1, 0 ,0, 0],
-        [1, 1, 1, 0],
-        [0, 0, 0, 0],
-        [0, 0, 0, 0]
-    ]))
-        return [
-            [0, 1, 1, 0],
-            [0, 1, 0, 0],
-            [0, 1, 0, 0],
-            [0, 0, 0, 0]
-        ];
-    if (arraysEqual(copy,[
-        [0, 1, 1, 0],
-        [0, 1, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 0, 0]
-    ]))
-        return [
-            [0, 0, 0, 0],
-            [1, 1, 1, 0],
-            [0, 0, 1, 0],
-            [0, 0, 0, 0]
-        ];
-    if (arraysEqual(copy,[
-        [0, 0, 0, 0],
-        [1, 1, 1, 0],
-        [0, 0, 1, 0],
-        [0, 0, 0, 0]
-    ]))
-        return [
-            [0, 1 ,0, 0],
-            [0, 1 ,0, 0],
-            [1, 1, 0, 0],
-            [0, 0, 0, 0]
-        ];
-// T //////////////////////////////////////
-    if (arraysEqual(copy,[
-        [0, 0, 0, 0],
-        [1, 1, 1, 0],
-        [0, 1, 0, 0],
-        [0, 0, 0, 0]
-    ]))
-        return [
-            [0, 1, 0, 0],
-            [1, 1, 0, 0],
-            [0, 1, 0, 0],
-            [0, 0, 0, 0]
-        ];
-    if (arraysEqual(copy,[
-        [0, 1, 0, 0],
-        [1, 1, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 0, 0]
-    ]))
-        return [
-            [0, 1, 0, 0],
-            [1, 1, 1, 0],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0]
-        ];
-    if (arraysEqual(copy,[
-        [0, 1, 0, 0],
-        [1, 1, 1, 0],
-        [0, 0, 0, 0],
-        [0, 0, 0, 0]
-    ]))
-        return [
-            [0, 1, 0, 0],
-            [0, 1, 1, 0],
-            [0, 1, 0, 0],
-            [0, 0, 0, 0]
-        ];
-    if (arraysEqual(copy,[
-        [0, 1, 0, 0],
-        [0, 1, 1, 0],
-        [0, 1, 0, 0],
-        [0, 0, 0, 0]
-    ]))
-        return [
-            [0, 0, 0, 0],
-            [1, 1, 1, 0],
-            [0, 1, 0, 0],
-            [0, 0, 0, 0]
-        ];
-
-        return copy;
-}
+} // end of Piece class
