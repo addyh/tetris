@@ -9,7 +9,7 @@ class Piece {
         // position of the piece's top-left corner, not yet scaled by gridSize
         // so every 1 position, translates to X gridSize in (this.draw())
                                        // (POS) * (GRIDSIZE) = PIXEL
-        this.pos = {x: 4, y: 0};       // ****** UNITARY ******
+        this.pos = {x: 4, y: -1};       // ****** UNITARY ******
         this.color = {r: random(0,200), g: random(0,200), b: random(0,200)};
         this.matrix = makeMatrix(this.shape);
         this.atBottom = false;
@@ -19,11 +19,12 @@ class Piece {
     // draw the piece on the board using its (pos) (color) and (matrix)
     // scaled by (gridSize)
     draw() {
-        for (var y=0; y<this.matrix.length; y++) {
-            var row = this.matrix[y];
+        // loop through every element of the piece matrix (4x4)
+        for (let y=0; y<this.matrix.length; y++) {
+            let row = this.matrix[y];
 
-            for (var x=0; x<row.length; x++) {
-                var value = row[x];
+            for (let x=0; x<row.length; x++) {
+                let value = row[x];
 
                 // draw boxes where the matrix has value 1
                 if (value != 0) {
@@ -55,8 +56,8 @@ class Piece {
 
     // drop the piece by 1 gridSize at an interval
     lower() {
-        var time = round(millis());
-        var deltaTime = time - this.board.lastTime;
+        let time = round(millis());
+        let deltaTime = time - this.board.lastTime;
         this.board.lastTime = time;
         this.board.dropCounter += deltaTime;
 
@@ -76,9 +77,8 @@ class Piece {
                 this.atBottom = true;
                 // add piece to the baord matrix
                 this.board.addPiece(this);
-                // check if any rows are full
-                this.board.checkIfRowsFull();
                 // make a new piece at the top
+                this.board.dropCounter = 0;
                 return new Piece(this.board);
             }
         }
@@ -124,32 +124,110 @@ class Piece {
     }
 
     rotate() {
-      var copy = new Array(this.matrix.length);
-        for (var i=0; i<this.matrix.length; i++) {
+        // reset drop counter to allow hovering
+        this.board.dropCounter = 0;
+
+        let copy = new Array(this.matrix.length);
+        for (let i=0; i<this.matrix.length; i++) {
             copy[i] = new Array(this.matrix[i].length);
-            for (var j=0; j<this.matrix[i].length; j++) {
+            for (let j=0; j<this.matrix[i].length; j++) {
                 copy[i][j] = this.matrix[i][j];
             }
         }
 
-        var rotated = rotatedPiece(copy);
+        let rotated = rotatedPiece(copy);
+        let canRotate = (this.canRotate(rotated));
+        let edgeBefore = this.atEdge();
 
-        var canRotate = (this.canRotate(rotated));
-
+        // try to rotate
         if (canRotate) {
+            // keep edge pieces stuck to edge when rotating
+            if (edgeBefore != 0) {
+                this.matrix = rotated;
+                let edgeAfter = this.atEdge();
+                if (edgeAfter == 0) {
+                    if (this.shape == 1 && edgeBefore == 1) {
+                        // I's on the right edge need to be moved an extra time
+                        // because they jump 2 spaces when rotated at the right
+                        this.move(1);
+                    }
+                    this.move(edgeBefore);
+                }
+            }
             return rotated;
-        } else {
-          return this.matrix;
         }
-    }
+
+        // try to go down
+        if (this.canGoDown()) {
+            this.pos.y++;
+            if (this.canRotate(rotated)) {
+                return rotated;
+            }
+            else {
+                // go back up
+                this.pos.y--;
+            }
+        }
+
+        // try to go up
+        this.pos.y--;
+        if (this.canRotate(rotated)) {
+            return rotated;
+        }
+        else {
+            // go back down
+            this.pos.y++;
+        }
+
+        // try to go left
+        if (this.canMove(-1)) {
+            this.move(-1);
+            if (this.canRotate(rotated)) {
+                return rotated;
+            }
+            else {
+                // I's need to go left twice because of right edge case
+                if (this.shape == 1) {
+                    if (this.canMove(-1)) {
+                        this.move(-1);
+                        if (this.canRotate(rotated)) {
+                            return rotated;
+                        }
+                        else {
+                            // go back
+                            this.move(1);
+                        }
+                    }
+                }
+                // go back
+                this.move(1);
+            }
+        }
+
+        // try to go right
+        if (this.canMove(1)) {
+            this.move(1);
+            if (this.canRotate(rotated)) {
+                return rotated;
+            }
+            else {
+                // go back
+                this.move(-1);
+            }
+        }
+
+        // could not rotate
+        return copy;
+
+    } // end of rotate()
 
     // can the piece be rotated?
     canRotate(rotatedMatrix) {
         // go through every element in the piece (4x4)
-        for (var j=0; j<rotatedMatrix.length; j++) {
+        for (let j=0; j<rotatedMatrix.length; j++) {
 
-            for (var i=0; i<rotatedMatrix[j].length; i++) {
-                var value = rotatedMatrix[j][i];
+            for (let i=0; i<rotatedMatrix[j].length; i++) {
+                let value = rotatedMatrix[j][i];
                 if ((value == 1)
                     && (!this.board.matrix[j+this.pos.y]
                     || !this.board.matrix[j+this.pos.y][i+this.pos.x]
@@ -164,9 +242,9 @@ class Piece {
     // can the piece go down by 1 block?
     canGoDown() {
         // go through every element in the piece (4x4)
-        for (var j=0; j<this.matrix.length; j++) {
-            for (var i=0; i<this.matrix[j].length; i++) {
-                var value = this.matrix[j][i];
+        for (let j=0; j<this.matrix.length; j++) {
+            for (let i=0; i<this.matrix[j].length; i++) {
+                let value = this.matrix[j][i];
 
                 if ((value == 1)
                     && (!this.board.matrix[j+this.pos.y+1]
@@ -181,12 +259,18 @@ class Piece {
     // can the piece move left/right?
     canMove (where) {
         // go through every element in the piece (4x4)
-        for (var j=0; j<this.matrix.length; j++) {
-            for (var i=0; i<this.matrix[j].length; i++) {
-                var value = this.matrix[j][i];
+        for (let j=0; j<this.matrix.length; j++) {
+            for (let i=0; i<this.matrix[j].length; i++) {
+                let value = this.matrix[j][i];
+                let newY = j+this.pos.y;
+                let newX = i+this.pos.x+where;
 
-                if (value == 1 &&
-                    this.board.matrix[j+this.pos.y][i+this.pos.x+where].value == 1) {
+                if (this.pos.y < -1
+                    || (value == 1
+                        && (newX < 0 || newX >= gridWidth
+                            || newY < 0 || newY >= gridHeight))
+                    || (value == 1 && this.pos.y >= 0
+                        && this.board.matrix[newY][newX].value == 1)) {
                     return false;
                 }
             }
@@ -194,9 +278,30 @@ class Piece {
         return true;
     }
 
+    // is this piece at the edge of the board?
+    // -1 for left, 1 for right, 0 for no
+    atEdge() {
+        // go through every element in the piece (4x4)
+        for (let j=0; j<this.matrix.length; j++) {
+            for (let i=0; i<this.matrix[j].length; i++) {
+                let value = this.matrix[j][i];
+                let x = i+this.pos.x;
+                if (value == 1) {
+                    if (x-1 < 0) {
+                        return -1;
+                    }
+                    else if (x+1 >= gridWidth) {
+                        return 1;
+                    }
+                }
+            }
+        }
+        return 0;
+    }
+
     // in pixels
     farRight(matrix) {
-        var farRight = 0;
+        let farRight = 0;
         matrix.forEach(function(row, y) {
             row.forEach(function(value, x) {
                 if (value == 1 && farRight < x) {
@@ -209,7 +314,7 @@ class Piece {
 
     // in pixels
     farLeft(matrix) {
-        var farLeft = 100;
+        let farLeft = 100;
         matrix.forEach(function(row, y) {
             row.forEach(function(value, x) {
                 if (value == 1 && farLeft > x) {
@@ -222,7 +327,7 @@ class Piece {
 
     // in pixels
     farBottom() {
-        var farBottom = 0;
+        let farBottom = 0;
         this.matrix.forEach(function(row, y) {
             row.forEach(function(value, x) {
                 if (value == 1 && farBottom < y) {
