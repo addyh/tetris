@@ -51,6 +51,7 @@ function draw() {
 
     if (board.gameOver) {
         board.draw();
+        gameOverScreen();
     }
     else if (board.gameStarted) {
         gameLoop();
@@ -61,6 +62,30 @@ function draw() {
     }
 
 } // end of draw() loop
+
+function gameOverScreen() {
+    let hoverStart = hovering('start');
+
+    // mouse pointer type
+    if (hoverStart && board.gameOver == true) {
+        $('#mainCanvas').css('cursor', 'pointer');
+    }
+    else {
+        $('#mainCanvas').css('cursor', 'default');
+    }
+
+    push();
+    translate(0,-50);
+    strokeWeight(9);
+    fill(40);
+    stroke(hoverStart?255:150);
+    rect(180,150,250,75);
+    fill(hoverStart?255:150);
+    textSize(40);
+    noStroke();
+    text("  Try again",200,200);
+    pop();
+}
 
 function startScreen() {
 
@@ -261,6 +286,14 @@ function mouseClicked() {
         }
         else if (hovering('credits')) {
             window.location.href = 'https://addyh.github.io';
+        }
+    }
+    else if (board.gameOver) {
+        if (hovering('start')) {
+            board = new Board();
+            piece = new Piece(board);
+            board.gameStarted = true;
+            $('#mainCanvas').css('cursor', 'default');
         }
     }
 }
