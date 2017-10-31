@@ -1,12 +1,12 @@
 // the size of 1 block
-var gridSize = 50;
+let gridSize = 50;
 
 // how many blocks wide/high is the grid
-var gridWidth = 12;
-var gridHeight = 12;
+let gridWidth = 12;
+let gridHeight = 12;
 
-var piece;
-var board;
+let piece;
+let board;
 
 function setup() {
     board = new Board();
@@ -227,26 +227,35 @@ function hovering(over) {
     }
 }
 
-var xDir;
-var lastX;
-//var mouseIsPressed;
+let xDir;
+let yDir;
+let lastX;
+let lastY;
 
 function mousePressed() {
     lastX = mouseX;
+    lastY = mouseY;
     xDir = 0;
+    yDir = 0;
 }
 
 function mouseDragged() {
     xDir = mouseX - lastX;
+    yDir = mouseY - lastY;
 }
 
 function mouseReleased() {
     if (board.gameStarted) {
-        if (xDir > 50) {
-          piece.move(1);
-        } else if (xDir < -50) {
+        if (yDir > 50) {
+            piece.goDown();
+        }
+        else if (xDir > 50) {
+            piece.move(1);
+        }
+        else if (xDir < -50) {
             piece.move(-1);
-        } else if (xDir >= -50 && xDir <= 50) {
+        }
+        else if (xDir >= -50 && xDir <= 50) {
             piece.matrix = piece.rotate();
         }
     }
@@ -315,18 +324,18 @@ function touchEnded() {
 }
 
 function setCookie(cname, cvalue, exdays) {
-    var d = new Date();
+    let d = new Date();
     d.setTime(d.getTime() + (exdays*24*60*60*1000));
-    var expires = "expires="+ d.toUTCString();
+    let expires = "expires="+ d.toUTCString();
     document.cookie = cname + "=" + cvalue + ";" + expires;
 }
 
 function getCookie(cname) {
-    var name = cname + "=";
-    var decodedCookie = decodeURIComponent(document.cookie);
-    var ca = decodedCookie.split(';');
-    for(var i = 0; i <ca.length; i++) {
-        var c = ca[i];
+    let name = cname + "=";
+    let decodedCookie = decodeURIComponent(document.cookie);
+    let ca = decodedCookie.split(';');
+    for(let i = 0; i <ca.length; i++) {
+        let c = ca[i];
         while (c.charAt(0) == ' ') {
             c = c.substring(1);
         }
