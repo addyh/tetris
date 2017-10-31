@@ -49,7 +49,10 @@ function draw() {
     // because of the game border
     translate(gridSize, gridSize);
 
-    if (board.gameStarted) {
+    if (board.gameOver) {
+        board.draw();
+    }
+    else if (board.gameStarted) {
         gameLoop();
     }
     else {
@@ -63,12 +66,13 @@ function startScreen() {
 
     // booleans, are we hovering?
     let hoverStart = hovering('start');
-    let hoverGrid = hovering('grid');
+    //let hoverGrid = hovering('grid');
     let hoverDiff = hovering('diff');
     let hoverCredits = hovering('credits');
 
     // mouse pointer type
-    if (hoverStart || hoverGrid|| hoverDiff|| hoverCredits) {
+    if ((hoverStart || hoverDiff || hoverCredits) // || hoverGrid
+        && board.gameStarted == false) {
         $('#mainCanvas').css('cursor', 'pointer');
     }
     else {
@@ -85,13 +89,13 @@ function startScreen() {
     textSize(40);
     noStroke();
     text("Start Game!",200,200);
-    fill(40);
-    stroke(hoverGrid?255:150);
+    // fill(40);
+    // stroke(hoverGrid?255:150);
     translate(0,150);
-    rect(180,150,250,75);
-    fill(hoverGrid?255:150);
-    noStroke();
-    text("Grid: "+(board.gridOn?"ON":"Off"),225,200);
+    // rect(180,150,250,75);
+    // fill(hoverGrid?255:150);
+    // noStroke();
+    // text("Grid: "+(board.gridOn?"ON":"Off"),225,200);
     translate(0,150);
     fill(40);
     stroke(hoverDiff?255:150);
@@ -121,7 +125,7 @@ function gameLoop() {
     board.draw();
     piece.draw();
 
-    board.checkIfRowsFull();
+    // board.checkIfRowsFull();
 
     if (!piece.atBottom) {
         piece = piece.lower();
@@ -184,10 +188,10 @@ function hovering(over) {
         return (mouseX.between(179+gridSize, 430+gridSize)
             && mouseY.between(97+gridSize, 178+gridSize));
     }
-    else if (over == "grid") {
-        return (mouseX.between(179+gridSize, 431+gridSize)
-            && mouseY.between(250+gridSize, 328+gridSize));
-    }
+    // else if (over == "grid") {
+    //     return (mouseX.between(179+gridSize, 431+gridSize)
+    //         && mouseY.between(250+gridSize, 328+gridSize));
+    // }
     else if (over == "diff") {
         return (mouseX.between(139+gridSize, 470+gridSize)
             && mouseY.between(389+gridSize, 474+gridSize));
@@ -229,13 +233,13 @@ function mouseClicked() {
         // start game button
         if (hovering('start')) {
             board.gameStarted = true;
-
+            $('#mainCanvas').css('cursor', 'default');
         }
         // grid on/off button
-        else if (hovering('grid')) {
-            board.gridOn = !board.gridOn;
-
-        }
+        // else if (hovering('grid')) {
+        //     board.gridOn = !board.gridOn;
+        //
+        // }
         // difficuly level button
         else if (hovering('diff')) {
 
