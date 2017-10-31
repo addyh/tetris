@@ -13,7 +13,8 @@ function arraysEqual(a,b) {
             if (!arraysEqual(a[i],b[i]))
                 return false;
         return true;
-    } else {
+    }
+    else {
         return a==b;  // if not both arrays, should be the same
     }
 }

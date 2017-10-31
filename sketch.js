@@ -169,9 +169,11 @@ function gameLoop() {
     if (board.downFor > 10 && piece.atBottom == false) {
         if (keyIsDown(LEFT_ARROW))  {
             piece.move(-1);
-        } else if (keyIsDown(RIGHT_ARROW)) {
+        }
+        else if (keyIsDown(RIGHT_ARROW)) {
             piece.move(1);
-        } else if (keyIsDown(DOWN_ARROW)) {
+        }
+        else if (keyIsDown(DOWN_ARROW)) {
             piece.goDown();
         }
     }
@@ -182,9 +184,11 @@ function keyPressed() {
     if (!piece.atBottom) {
         if (keyCode === LEFT_ARROW) {
             piece.move(-1);
-        } else if (keyCode === RIGHT_ARROW) {
+        }
+        else if (keyCode === RIGHT_ARROW) {
             piece.move(1);
-        } else if (keyCode === DOWN_ARROW) {
+        }
+        else if (keyCode === DOWN_ARROW) {
             piece.goDown();
         }
     }
