@@ -14,17 +14,16 @@ class Board {
         this.lowerLimit = gridHeight*gridSize;
         this.rightLimit = gridWidth*gridSize;
 
-        this.gameStarted = false;
-        this.difficulty = "Easy";
-        this.diffColor = "green";
+        this.difficulty = 'Easy';
+        this.diffColor = 'green';
         this.gridOn = true;
-
-        // your score counter
-        this.score = 0;
 
         // personal best
         this.best = getCookie('personal_best');
 
+        // game state variables
+        this.score = 0;
+        this.gameStarted = false;
         this.gameOver = false;
 
         // create a board grid, size (gridHeight) x (gridWidth)
