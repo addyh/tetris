@@ -20,12 +20,19 @@ function setup() {
     mainCanvas = createCanvas(board.rightLimit+gridSize*2, board.lowerLimit+gridSize*2)
         .id('mainCanvas');
 
-    hiscoreInput = createInput('').id('hiscoreInput');
+    // high score input box
+    hiscoreInput = createInput('').id('hiscoreInput').parent('hiscoreForm');
     hiscoreInput.style('position', 'absolute');
     hiscoreInput.style('width', '300px');
     hiscoreInput.style('height', '30px');
     hiscoreInput.style('font-size', '24pt');
     hiscoreInput.attribute('maxlength', '19');
+
+    // submit the form when they prss enter
+    $('#hiscoreForm').submit(function(event) {
+      submitHiscore();
+      event.preventDefault();
+    });
 
     if (typeof getBestName == 'undefined') {
         getBestName = function() {
@@ -44,6 +51,7 @@ function setup() {
 // main draw loop
 function draw() {
 
+    // Keep highscore input box hidden until needed
     hiscoreInput.style('display', 'none');
 
     // clear screen every frame
@@ -537,14 +545,7 @@ function mouseClicked() {
             board.dropInterval = 100;
         }
         else if (hovering('submit') && isBestScore()) {
-            let name = hiscoreInput.value();
-            if (name) {
-                addBestScore(name, board.score);
-                window.location.reload(true);
-            }
-            else {
-                alert('Enter a name to submit your high score!');
-            }
+            submitHiscore();
         }
     }
 }
@@ -565,10 +566,24 @@ function touchEnded() {
   return false;
 }
 
+function submitHiscore() {
+    let name = hiscoreInput.value();
+    if (name) {
+        addBestScore(name, board.score);
+        window.location.reload(true);
+        //alert('kill');
+    }
+    else {
+        alert('Enter a name to submit your high score!');
+    }
+}
+
 function addBestScore(name, score) {
     let image = document.createElement('img');
     image.setAttribute('style', 'display:none;');
     image.src = 'https://addy.ml/tetris-host/hiscores.php?add&name='+name+'&score='+score;
+    $('body').append(image);
+    return;
 }
 
 function isBestScore() {
