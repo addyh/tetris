@@ -7,19 +7,29 @@ let gridHeight = 12;
 
 let piece;
 let board;
+let mainCanvas;
+let hiscoreInput;
 
 function setup() {
     board = new Board();
     piece = new Piece(board);
 
-    createCanvas(board.rightLimit+gridSize*2, board.lowerLimit+gridSize*2)
+    mainCanvas = createCanvas(board.rightLimit+gridSize*2, board.lowerLimit+gridSize*2)
         .id('mainCanvas');
-    background(255);
+
+    hiscoreInput = createInput('').id('hiscoreInput');
+    hiscoreInput.style('position', 'absolute');
+    hiscoreInput.style('width', '300px');
+    hiscoreInput.style('height', '30px');
+    hiscoreInput.style('font-size', '24pt');
+    hiscoreInput.attribute('maxlength', '19');
 
 }
 
 // main draw loop
 function draw() {
+
+    hiscoreInput.style('display', 'none');
 
     // clear screen every frame
     background(255);
@@ -39,8 +49,9 @@ function draw() {
 
     // post current high score
     fill(255);
-    text("Score: "+board.score, 100, 32);
-    text("Personal Best: "+board.best, 380, 32);
+    textSize(25);
+    text('Score: ' + board.score, 100, 32);
+    text('Personal Best: ' + board.best, 380, 32);
 
     // grid color, light gray
     stroke(200);
@@ -63,30 +74,6 @@ function draw() {
 
 } // end of draw() loop
 
-function gameOverScreen() {
-    let hoverStart = hovering('start');
-
-    // mouse pointer type
-    if (hoverStart && board.gameOver == true) {
-        $('#mainCanvas').css('cursor', 'pointer');
-    }
-    else {
-        $('#mainCanvas').css('cursor', 'default');
-    }
-
-    push();
-    translate(0,-50);
-    strokeWeight(9);
-    fill(40);
-    stroke(hoverStart?255:150);
-    rect(180,150,250,75);
-    fill(hoverStart?255:150);
-    textSize(40);
-    noStroke();
-    text("  Try again",200,200);
-    pop();
-}
-
 function startScreen() {
 
     // booleans, are we hovering?
@@ -94,6 +81,15 @@ function startScreen() {
     //let hoverGrid = hovering('grid');
     let hoverDiff = hovering('diff');
     let hoverCredits = hovering('credits');
+
+    // High score
+    let bestName = getBestName();
+    let bestScore = getBestScore();
+
+    if (!bestName || !bestScore) {
+        bestName = 'Nobody';
+        bestScore = 0;
+    }
 
     // mouse pointer type
     if ((hoverStart || hoverDiff || hoverCredits) // || hoverGrid
@@ -105,6 +101,9 @@ function startScreen() {
     }
 
     // button layout
+    push();
+
+    // start button
     translate(0,-50);
     strokeWeight(9);
     fill(40);
@@ -113,27 +112,35 @@ function startScreen() {
     fill(hoverStart?255:150);
     textSize(40);
     noStroke();
-    text("Start Game!",200,200);
-    // fill(40);
-    // stroke(hoverGrid?255:150);
-    translate(0,150);
-    // rect(180,150,250,75);
-    // fill(hoverGrid?255:150);
-    // noStroke();
-    // text("Grid: "+(board.gridOn?"ON":"Off"),225,200);
+    text('Start Game!',200,200);
+
+    // high score
+    translate(0, 150);
+    fill(0);
+    textSize(50);
+    text('High Score:', 175, 140);
+    let nameTextCount = bestName.length;
+    let scoreTextCount = bestScore.toString().length;
+    text(bestName + '\n', 270-(nameTextCount*10), 205);
+    text(bestScore, 285-(scoreTextCount*10), 270);
+
+    // difficulty button
     translate(0,150);
     fill(40);
     stroke(hoverDiff?255:150);
     rect(180-40,150,250+80,75);
     fill(board.diffColor);
     noStroke();
-    text("Difficulty: "+board.difficulty,200-30,200);
+    textSize(40);
+    text('Difficulty: '+board.difficulty,200-30,200);
+
+    // credits link
     translate(0, 150);
     textSize(25);
     fill(hoverCredits?color(0,0,238):150);
     stroke(hoverCredits?color(0,0,238):150);
     strokeWeight(1);
-    text("addyh.github.io",210,185);
+    text('addyh.github.io',210,185);
     if (hoverCredits) {
         strokeWeight(3);
         line(210, 190, 380, 190);
@@ -142,7 +149,175 @@ function startScreen() {
     strokeWeight(1);
     fill(0);
     stroke(0);
+
+    pop();
 } // end of startScreen()
+
+function gameOverScreen() {
+    let hoverStart = hovering('start');
+    let hoverEasy = hovering('Easy');
+    let hoverMed = hovering('Med.');
+    let hoverHard = hovering('Hard');
+    let hoverSubmit = hovering('submit');
+
+    let canPressEasy = (board.difficulty != 'Easy');
+    let canPressMed = (board.difficulty != 'Med.');
+    let canPressHard = (board.difficulty != 'Hard');
+    // High score
+    let bestName = getBestName();
+    let bestScore = getBestScore();
+
+    if (!bestName || !bestScore) {
+        bestName = 'Nobody';
+        bestScore = 0;
+    }
+
+    // Did player beat the all time high score?
+    let newBestScore = isBestScore();
+    let scoreDiff = (bestScore - board.score)
+
+    // mouse pointer type
+    if (board.gameOver == true
+        && (hoverStart
+            || (hoverSubmit && newBestScore)
+            || (hoverEasy && canPressEasy && !newBestScore)
+            || (hoverMed && canPressMed && !newBestScore)
+            || (hoverHard && canPressHard && !newBestScore))) {
+        $('#mainCanvas').css('cursor', 'pointer');
+    }
+    else {
+        $('#mainCanvas').css('cursor', 'default');
+    }
+
+    // game over buttons
+    push();
+
+    // try again
+    translate(0, -50);
+    strokeWeight(9);
+    fill(40);
+    stroke(hoverStart?255:150);
+    rect(180, 150, 250, 75);
+    fill(hoverStart?255:150);
+    textSize(40);
+    noStroke();
+    text('  Try Again', 200, 200);
+
+    // high score
+    translate(0, 125);
+    strokeWeight(9);
+    stroke(150);
+    fill(40);
+    rect(80, 150, 435, 350);
+
+    // player beat the high score!
+    if (newBestScore) {
+        noStroke();
+        fill(150);
+        textSize(25);
+        text('                Congratulations!'
+            + '\n        You beat the High Score!!!'
+            + '\n\n\n\nEnter your name:', 100, 200);
+        textSize(40);
+        fill('cyan');
+        let scoreTextCount = board.score.toString().length;
+        // 10 is half the width of a single digit
+        text(board.score, 290-(scoreTextCount*10), 300);
+        let canvasPos = $('#mainCanvas').position();
+        hiscoreInput.style('display', 'block');
+        hiscoreInput.style('top', (canvasPos.top+500) + 'px');
+        hiscoreInput.style('left', (canvasPos.left+200) + 'px');
+        hiscoreInput.value(hiscoreInput.value().replace(/[^a-zA-Z0-9 _-]/g, ''));
+        document.getElementById('hiscoreInput').focus();
+
+        // submit button
+        translate(0, 275);
+        fill(40);
+        stroke(hoverSubmit?255:150);
+        strokeWeight(4);
+        if (hoverSubmit) {
+            strokeWeight(5);
+        }
+        rect(180-40, 150, 250+80, 60);
+        fill('cyan');
+        noStroke();
+        if (hoverSubmit) {
+            textSize(41);
+            fill(255)
+        }
+        text('Submit Score!',175, 195);
+    }
+    // player did not beat the high score
+    else {
+        noStroke();
+        fill(150);
+        textSize(25);
+        text('Your score was: ' + board.score + '!'
+            + '\n\nThat\'s only ' + scoreDiff + ' away'
+            + '\n from beating ' + bestName + '!'
+            + '\n\nPlay Medium or Hard\n to earn points faster!', 180, 200);
+
+        strokeWeight(3);
+        stroke(150);
+        fill(40);
+
+        // easy button
+        if (canPressEasy) {
+            stroke('green');
+            if (hovering('Easy')) {
+                strokeWeight(5);
+                textSize(26);
+            }
+        }
+        rect(120, 420, 100, 50);
+        if (canPressEasy) {
+            fill('green');
+        }
+        strokeWeight(1);
+        text('Easy', 120+23, 420+32);
+        textSize(25);
+        strokeWeight(3);
+        stroke(150);
+        fill(40);
+
+        // medium button
+        if (canPressMed) {
+            stroke('orange');
+            if (hovering('Med.')) {
+                strokeWeight(5);
+                textSize(26);
+            }
+        }
+        rect(240, 420, 100, 50);
+        if (canPressMed) {
+            fill('orange');
+        }
+        strokeWeight(1);
+        text('Med.', 240+23, 420+32);
+        textSize(25);
+        strokeWeight(3);
+        stroke(150);
+        fill(40);
+
+        // hard button
+        if (canPressHard) {
+            stroke('red');
+            if (hovering('Hard')) {
+                strokeWeight(5);
+                textSize(26);
+            }
+        }
+        rect(360, 420, 100, 50);
+        if (canPressHard) {
+            fill('red');
+        }
+        strokeWeight(1);
+        text('Hard', 360+23, 420+32);
+    }
+
+    pop();
+} // end of gameOverScreen()
+
 
 // main gameplay loop
 function gameLoop() {
@@ -213,21 +388,37 @@ Number.prototype.between = function(a, b) {
 };
 
 function hovering(over) {
-    if (over == "start") {
+    if (over == 'start') {
         return (mouseX.between(179+gridSize, 430+gridSize)
             && mouseY.between(97+gridSize, 178+gridSize));
     }
-    // else if (over == "grid") {
+    // else if (over == 'grid') {
     //     return (mouseX.between(179+gridSize, 431+gridSize)
     //         && mouseY.between(250+gridSize, 328+gridSize));
     // }
-    else if (over == "diff") {
+    else if (over == 'diff') {
         return (mouseX.between(139+gridSize, 470+gridSize)
             && mouseY.between(389+gridSize, 474+gridSize));
     }
-    else if (over == "credits") {
+    else if (over == 'credits') {
         return (mouseX.between(139+50+gridSize, 470+gridSize-50)
             && mouseY.between(389+gridSize+160, 474+gridSize+125));
+    }
+    else if (over == 'Easy') {
+        return (mouseX.between(168, 272)
+            && mouseY.between(544, 598));
+    }
+    else if (over == 'Med.') {
+        return (mouseX.between(289, 391)
+            && mouseY.between(544, 598));
+    }
+    else if (over == 'Hard') {
+        return (mouseX.between(409, 512)
+            && mouseY.between(544, 598));
+    }
+    else if (over == 'submit') {
+        return (mouseX.between(188, 522)
+            && mouseY.between(548, 611));
     }
 }
 
@@ -266,7 +457,9 @@ function mouseReleased() {
 }
 
 function mouseClicked() {
-    //console.log(mouseX,mouseY);
+    // console.log(mouseX, mouseY);
+
+    // start screen buttons
     if (!board.gameStarted) {
         // start game button
         if (hovering('start')) {
@@ -281,19 +474,19 @@ function mouseClicked() {
         // difficuly level button
         else if (hovering('diff')) {
 
-            if (board.difficulty == "Easy") {
-                board.difficulty = "Med.";
-                board.diffColor = "orange";
+            if (board.difficulty == 'Easy') {
+                board.difficulty = 'Med.';
+                board.diffColor = 'orange';
                 board.dropInterval = 300;
             }
-            else if (board.difficulty == "Med.") {
-                board.difficulty = "Hard";
-                board.diffColor = "red";
+            else if (board.difficulty == 'Med.') {
+                board.difficulty = 'Hard';
+                board.diffColor = 'red';
                 board.dropInterval = 100;
             }
-            else if (board.difficulty == "Hard") {
-                board.difficulty = "Easy";
-                board.diffColor = "green";
+            else if (board.difficulty == 'Hard') {
+                board.difficulty = 'Easy';
+                board.diffColor = 'green';
                 board.dropInterval = 1000;
             }
         }
@@ -301,12 +494,42 @@ function mouseClicked() {
             window.location.href = 'https://addyh.github.io';
         }
     }
+    // game over buttons
     else if (board.gameOver) {
         if (hovering('start')) {
+            let oldBoard = board;
             board = new Board();
             piece = new Piece(board);
             board.gameStarted = true;
+            board.difficulty = oldBoard.difficulty;
+            board.diffColor = oldBoard.diffColor;
+            board.dropInterval = oldBoard.dropInterval;
             $('#mainCanvas').css('cursor', 'default');
+        }
+        else if (hovering('Easy') && !isBestScore()) {
+            board.difficulty = 'Easy';
+            board.diffColor = 'green';
+            board.dropInterval = 1000;
+        }
+        else if (hovering('Med.') && !isBestScore()) {
+            board.difficulty = 'Med.';
+            board.diffColor = 'orange';
+            board.dropInterval = 300;
+        }
+        else if (hovering('Hard') && !isBestScore()) {
+            board.difficulty = 'Hard';
+            board.diffColor = 'red';
+            board.dropInterval = 100;
+        }
+        else if (hovering('submit') && isBestScore()) {
+            let name = hiscoreInput.value();
+            if (name) {
+                addBestScore(name, board.score);
+                window.location.reload(true);
+            }
+            else {
+                alert('Enter a name to submit your high score!');
+            }
         }
     }
 }
@@ -327,15 +550,26 @@ function touchEnded() {
   return false;
 }
 
+function addBestScore(name, score) {
+    let image = document.createElement('img');
+    image.setAttribute('style', 'display:none;');
+    image.src = 'http://addy.ml:8080/tetris-host/hiscores.php?add&name='+name+'&score='+score;
+}
+
+function isBestScore() {
+    let bestScore = getBestScore();
+    return (board.score > bestScore);
+}
+
 function setCookie(cname, cvalue, exdays) {
     let d = new Date();
     d.setTime(d.getTime() + (exdays*24*60*60*1000));
-    let expires = "expires="+ d.toUTCString();
-    document.cookie = cname + "=" + cvalue + ";" + expires;
+    let expires = 'expires='+ d.toUTCString();
+    document.cookie = cname + '=' + cvalue + ';' + expires;
 }
 
 function getCookie(cname) {
-    let name = cname + "=";
+    let name = cname + '=';
     let decodedCookie = decodeURIComponent(document.cookie);
     let ca = decodedCookie.split(';');
     for(let i = 0; i <ca.length; i++) {
