@@ -10,6 +10,9 @@ let board;
 let mainCanvas;
 let hiscoreInput;
 
+var getBestName;
+var getBestScore;
+
 function setup() {
     board = new Board();
     piece = new Piece(board);
@@ -23,6 +26,18 @@ function setup() {
     hiscoreInput.style('height', '30px');
     hiscoreInput.style('font-size', '24pt');
     hiscoreInput.attribute('maxlength', '19');
+
+    if (typeof getBestName == 'undefined') {
+        getBestName = function() {
+            return 'Nobody'
+        };
+    }
+
+    if (typeof getBestScore == 'undefined') {
+        getBestScore = function() {
+            return 0;
+        };
+    }
 
 }
 
@@ -553,7 +568,7 @@ function touchEnded() {
 function addBestScore(name, score) {
     let image = document.createElement('img');
     image.setAttribute('style', 'display:none;');
-    image.src = 'http://addy.ml:8080/tetris-host/hiscores.php?add&name='+name+'&score='+score;
+    image.src = 'https://addy.ml/tetris-host/hiscores.php?add&name='+name+'&score='+score;
 }
 
 function isBestScore() {
