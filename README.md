@@ -5,7 +5,7 @@ You'll want to view it at [https://addyh.github.io/tetris/](https://addyh.github
 
 If you wish to contribute, or understand the code, please read the:
 
-> **[Code Overview](https://github.com/addyh/tetris/wiki/Code-Overview)**
+> ## **[Code Overview](https://github.com/addyh/tetris/wiki/Code-Overview)**
 >  * **Main Sketch File**
 >    * [sketch.js](https://github.com/addyh/tetris/wiki/sketch.js)
 >  * **Classes**
