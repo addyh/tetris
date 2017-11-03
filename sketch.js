@@ -570,8 +570,6 @@ function submitHiscore() {
     let name = hiscoreInput.value();
     if (name) {
         addBestScore(name, board.score);
-        window.location.reload(true);
-        //alert('kill');
     }
     else {
         alert('Enter a name to submit your high score!');
@@ -579,11 +577,15 @@ function submitHiscore() {
 }
 
 function addBestScore(name, score) {
+    let scoreUrl = 'https://addy.ml/tetris-host/hiscores.php?add&name='
+        + name + '&score=' + score;
     let image = document.createElement('img');
     image.setAttribute('style', 'display:none;');
-    image.src = 'https://addy.ml/tetris-host/hiscores.php?add&name='+name+'&score='+score;
+    image.src = scoreUrl;
     $('body').append(image);
-    return;
+    setTimeout(function() {
+        window.location.reload(true);
+    }, 2000);
 }
 
 function isBestScore() {
