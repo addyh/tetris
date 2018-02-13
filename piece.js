@@ -125,7 +125,7 @@ class Piece {
 
   rotate() {
     // reset drop counter to allow hovering
-    this.board.dropCounter = 0;
+    // this.board.dropCounter = 0;
 
     let copy = new Array(this.matrix.length);
     for (let i=0; i<this.matrix.length; i++) {
